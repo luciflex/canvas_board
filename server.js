@@ -17,7 +17,8 @@ io.on('connection',function(socket){
 })
 
 app.use(express.static('client'));
-
-server.listen(3000,function(){
-    console.log("server started at 3000");
+const port=process.env.PORT||3000;
+server.listen(port,function(){
+    
+    console.log(`server started at ${port}`);
 })
