@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+     <div class="toolbar">
+         <div class="tools">
+             <div class="tool">
+             <img src="pencil.svg" alt="" class="pencil-image img" onclick="handler('pencil')">
+             <div class="pencil-options tool-options">
+             <div class="pencil-slider">
+                 <input type="range" name="pencilslide" id="ps1" min="5" max="30" value="5">
+             </div>
+             <div class="pencil-color">
+                 <div class="color black" onclick="colorP('black')"></div>
+                 <div class="color red" onclick="colorP('red')"></div>
+                 <div class="color blue" onclick="colorP('blue')"></div>
+             </div>
+             </div></div>
+             <div class="tool">
+             <img src="eraser.svg" alt="" class="eraser-image img" onclick="handler('eraser')">
+             <div class="eraser-options tool-options">
+                 <input type="range" name="eraserslide" id="es1" min="5" max="5" value="5">
+             </div>
+             </div>
+             <div class="tool">
+                 <img src="sticky.svg" alt="" class="sticky-img img" onclick="handler('sticky')">   
+             </div>
+             <div class="tool">
+                 <img src="Undo.svg" alt="" class="undo-img img">   
+             </div>
+             <div class="tool">
+                 <img src="Redo.svg" alt="" class="redo-img img">   
+             </div>
+             <div class="tool">
+                 <img src="zoomin.svg" alt="" class="zoomin img">
+             </div>
+             <div class="tool">
+                <img src="zoomout.svg" alt="" class="zoomout img">
+            </div>
+            <div class="tool" >
+                <img src="Download.svg" alt="" class="download img" onclick="download()">
+            </div>
+            <div class="tool" >
+                <img src="upload.svg" alt="" class="upload img" onclick="upload()">
+                 <input type="file" name="" id="inputFile">
+            </div> 
+         </div>
+     </div>
+     <canvas class="board">
+         
+         
+    </canvas>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js" crossorigin></script>
+     <script>
+
+         const socket=io.connect('http://localhost:3000');
+
+         
+
+         const board=document.querySelector(".board");
+         board.height=window.innerHeight;
+         board.width=window.innerWidth;
+
+         const ctx=board.getContext("2d");
+        //  ctx.fillRect(0,0,window.innerWidth,window.innerHeight);
+        //  ctx.fillStyle="red"
+        //  ctx.fillRect(0,0,window.innerWidth/2,window.innerHeight/2);
+         
+        ctx.lineWidth=5;
+        
+         let undostack=[];
+         let isMouseDown=false;
+
+         board.addEventListener("mousedown",function(e){
+             ctx.beginPath();
+            //  const x=e.clientX;
+            //  const y=e.clientY;
+            const { x , y}=getLocation(e.clientX,e.clientY);
+             ctx.moveTo(x,y);
+             isMouseDown=true;
+             let point={
+                 pointx:x,
+                 pointy:y,
+                 type:"start"
+             };
+             undostack.push(point);
+            
+         })
+         board.addEventListener("mousemove",function(e){
+             if(isMouseDown){
+             const { x , y}=getLocation(e.clientX,e.clientY);
+             ctx.lineTo(x,y);
+             ctx.stroke();
+             let point={
+                 pointx:x,
+                 pointy:y,
+                 type:"move",
+                 color:ctx.strokeStyle
+             };
+             undostack.push(point);
+             socket.emit("pencil",undostack);
+             }     
+         })
+         board.addEventListener("mouseup",function(){
+                 isMouseDown=false;
+         })
+        
+         function getLocation(posx,posy){
+             const rect=board.getBoundingClientRect();
+             const top=rect.top;
+             return{
+                 y:posy-top,
+                 x:posx
+             }
+         }
+         // ctx.beginPath();
+         // ctx.moveTo(100,200);
+         // ctx.lineTo(300,400);
+         // ctx.moveTo(100,200);
+         // ctx.lineTo(300,200);
+     </script>
+     <script src="sticky.js"></script>
+     <script src="tools.js"></script>
+     <script src="zoom.js"></script>
+     <script src="downupload.js"></script>
+     <script src="receiver.js"></script>
+</body>
+</html>
